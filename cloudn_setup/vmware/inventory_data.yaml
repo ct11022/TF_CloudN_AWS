@@ -1,0 +1,42 @@
+# Sample inventory yaml file
+inventory:
+  host:
+    '[1]':
+        ip: 172.16.15.34
+  vm:
+    '[1]':
+        name: vcn-smoke-1
+        ip: 172.16.8.11
+        host: host1
+        bgp_asn: 65011
+        nei_lan_bgp_asn: 65036
+        nei_lan_ip: 10.220.2.100
+        username: admin
+        passwd: Aviatrix123#
+    '[2]':
+        name: vcn-smoke-2
+        ip: 172.16.8.12
+        host: host1
+        bgp_asn: 65012
+        nei_lan_bgp_asn: 65036
+        nei_lan_ip: 10.220.2.100
+        username: admin
+        passwd: Aviatrix123#
+    '[3]':
+        name: vcn-smoke-3
+        ip: 172.16.8.13
+        host: host1
+        bgp_asn: 65013
+        nei_lan_bgp_asn: 65036
+        nei_lan_ip: 10.220.2.100
+        username: admin
+        passwd: Aviatrix123#
+    '[4]':
+        name: vcn-smoke-4
+        ip: 172.16.8.14
+        host: host1
+        bgp_asn: 65014
+        nei_lan_bgp_asn: 65036
+        nei_lan_ip: 10.220.2.100
+        username: admin
+        passwd: Aviatrix123#
