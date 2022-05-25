@@ -56,3 +56,4 @@ venv.bak/
 terraform.rc
 .terraform.lock.hcl
 provider_cred.json
+provider_cred.tfvars
