@@ -27,7 +27,10 @@ variable "spoke_vpc_reg" {
   description = "spoke vpc region"
   default = "us-east-2"
 }
-
+variable "spoke_count" {
+  description = "The number of spokes to create."
+  default     = 1
+}
 variable "controller_vpc_id" {
   description = "create controller at existed vpc"
   default = ""
@@ -67,15 +70,49 @@ variable "cloudn_public_ip_cidr" {
   type        = string
   default = ""
 }
+variable "cloudn_hostname" {
+  description = "CloudN hostname, ex:IP, or hostname"
+  type        = string
+}
+variable "cloudn_https_port" {
+  description = "CloudN hostname, ex:IP, or hostname"
+  type        = string
+  default = "22"
+}
+variable "cloudn_bgp_asn" {
+  description = "CloudN BGP AS Number"
+  type        = string
+  default = ""
+}
+variable "cloudn_lan_interface_neighbor_ip" {
+  description = "CloudN LAN Interface Neighbor's IP Address."
+  type        = string
+  default = ""
+}
+variable "cloudn_lan_interface_neighbor_bgp_asn" {
+  description = "CloudN LAN Interface Neighbor's AS Number."
+  type        = string
+  default = ""
+}
 variable "transit_gateway_bgp_asn" {
   description = "The transit gw BGP ASN number"
   type        = string
   default = "65001"
 }
+variable "enable_caag" {
+  description = "Decide register & attach the caag in this testbed"
+  type        = bool
+  default = false
+}
 variable "caag_name" {
   description = "CloudN As Gateway Name"
   type        = string
   default = "caag"
+}
+variable "caag_connection_name" {
+  description = "CloudN As Gateway Name"
+  type        = string
+  default = "connection-1"
 }
 variable "on_prem" {
   description = " On-prem IP address"
@@ -89,4 +126,8 @@ variable "enable_over_private_network" {
 variable "vcn_restore_snapshot_name" {
   type       = string
   default = ""
+}
+variable "cert_domain" {
+  type       = string
+  default = "caag.com"
 }
