@@ -9,6 +9,7 @@ locals {
   new_key = (var.keypair_name == "" || var.ssh_public_key == "" ? true : false)
 }
 
+
 # Create AWS VPC for Aviatrix Controller
 resource "aws_vpc" "controller" {
   count            = (local.new_vpc ? 1 : 0)
@@ -88,14 +89,7 @@ module "aviatrix_controller_build_existed_vpc" {
 
 }
 
-# resource "random_string" "random" {
-#   length           = 6
-#   special          = false
-#   lower            = true
-#   number           = true
-# }
-
-
+#Initialize Controller
 module "aviatrix_controller_initialize" {
   source              = "./aviatrix-controller-initialize-local"
   aws_account_id      = data.aws_caller_identity.current.account_id
@@ -113,6 +107,10 @@ module "aviatrix_controller_initialize" {
   ]
 }
 
+resource "aviatrix_controller_cert_domain_config" "controller_cert_domain" {
+    provider    = aviatrix.new_controller
+    cert_domain = var.cert_domain
+}
 
 # Create AWS Transit VPC
 resource "aviatrix_vpc" "transit" {
@@ -126,14 +124,15 @@ resource "aviatrix_vpc" "transit" {
   aviatrix_transit_vpc = true
   aviatrix_firenet_vpc = false
   depends_on           = [
+    aviatrix_controller_cert_domain_config.controller_cert_domain,
     module.aviatrix_controller_initialize
   ]
 }
 
 # Create AWS Spoke VPCs
 module "aws_spoke_vpc" {
-  source                 = "github.com/AviatrixDev/automation_test_scripts/Regression_Testbed_TF_Module/modules/testbed-vpc-aws"
-  vpc_count              = 1
+  source                 = "git@github.com:AviatrixDev/automation_test_scripts.git//Regression_Testbed_TF_Module/modules/testbed-vpc-aws?ref=master"
+  vpc_count              = var.spoke_count
   resource_name_label    = "${var.testbed_name}-spoke"
   pub_hostnum            = 10
   pri_hostnum            = 20
@@ -147,7 +146,6 @@ module "aws_spoke_vpc" {
   instance_size          = "t3.nano"
 }
 
-
 #Create an Aviatrix Transit Gateway
 resource "aviatrix_transit_gateway" "transit" {
   provider                 = aviatrix.new_controller
@@ -156,17 +154,16 @@ resource "aviatrix_transit_gateway" "transit" {
   gw_name                  = "${var.testbed_name}-Transit-GW"
   vpc_id                   = (var.transit_vpc_id != "" ? var.transit_vpc_id : aviatrix_vpc.transit[0].vpc_id)
   vpc_reg                  = var.transit_vpc_reg
-  gw_size                  = "c5.4xlarge"
+  gw_size                  = "c5.large"
   subnet                   = (var.transit_vpc_cidr != "" ? cidrsubnet(var.transit_vpc_cidr, 10, 14) : cidrsubnet(aviatrix_vpc.transit[0].cidr, 10, 2))
   # subnet                   = "10.120.2.0/26"
   insane_mode              = true
   insane_mode_az           = "${var.transit_vpc_reg}a"
   ha_subnet                = (var.transit_vpc_cidr != "" ? cidrsubnet(var.transit_vpc_cidr, 10, 16) : cidrsubnet(aviatrix_vpc.transit[0].cidr, 10, 4))
   # ha_subnet                = "10.120.2.192/26"
-  ha_gw_size               = "c5.4xlarge"
+  ha_gw_size               = "c5.large"
   ha_insane_mode_az        = "${var.transit_vpc_reg}b"
   single_ip_snat           = false
-  enable_active_mesh       = true
   connected_transit        = true
   depends_on               = [
     module.aviatrix_controller_initialize]
@@ -185,7 +182,6 @@ resource "aviatrix_spoke_gateway" "spoke" {
   subnet                     = module.aws_spoke_vpc.subnet_cidr[count.index]
   ha_subnet                  = module.aws_spoke_vpc.subnet_cidr[count.index]
   ha_gw_size                 = "t3.small"
-  enable_active_mesh         = true
   manage_transit_gateway_attachment = false
   depends_on                 = [
     module.aws_spoke_vpc,
@@ -200,6 +196,71 @@ resource "aviatrix_spoke_transit_attachment" "spoke" {
   count           = 1
   spoke_gw_name   = aviatrix_spoke_gateway.spoke[count.index].gw_name
   transit_gw_name = aviatrix_transit_gateway.transit.gw_name
+}
+
+locals {
+  cloudn_url = "${var.cloudn_hostname}:${var.cloudn_https_port}"
+}
+
+#Reset CloudN
+resource "null_resource" "reset_cloudn" {
+  count = (var.enable_caag ? 1 : 0)
+  provisioner "local-exec" {
+    command = <<-EOT
+            AVTX_CID=$(curl -X POST  -k https://${local.cloudn_url}/v1/backend1 -d 'action=login_proc&username=admin&password=Aviatrix123#'| awk -F"\"" '{print $34}');
+            curl -X POST  -k https://${local.cloudn_url}/v1/api -d "action=reset_caag_to_cloudn_factory_state_by_cloudn&CID=$AVTX_CID"
+        EOT
+  }
+}
+
+resource "time_sleep" "wait_120_seconds" {
+  count      = (var.enable_caag ? 1 : 0)
+  depends_on = [null_resource.reset_cloudn]
+
+  create_duration = "120s"
+}
+
+# Register a CloudN to Controller
+resource "aviatrix_cloudn_registration" "cloudn_registration" {
+  provider        = aviatrix.new_controller
+  count           = (var.enable_caag ? 1 : 0)
+  name            = var.caag_name
+  username        = var.aviatrix_controller_username
+  password        = var.aviatrix_controller_password
+  address         = local.cloudn_url
+
+  depends_on      = [
+    time_sleep.wait_120_seconds
+  ]
+	lifecycle {
+		ignore_changes = all
+	}
+}
+
+resource time_sleep wait_30_s{
+  create_duration = "30s"
+  depends_on = [
+    aviatrix_cloudn_registration.cloudn_registration
+  ]
+}
+
+# Create a CloudN Transit Gateway Attachment
+resource "aviatrix_cloudn_transit_gateway_attachment" "caag" {
+  provider                              = aviatrix.new_controller
+  count                                 = (var.enable_caag ? 1 : 0)
+  device_name                           = var.caag_name
+  transit_gateway_name                  = aviatrix_transit_gateway.transit.gw_name
+  connection_name                       = var.caag_connection_name
+  transit_gateway_bgp_asn               = var.transit_gateway_bgp_asn
+  cloudn_bgp_asn                        = var.cloudn_bgp_asn
+  cloudn_lan_interface_neighbor_ip      = var.cloudn_lan_interface_neighbor_ip
+  cloudn_lan_interface_neighbor_bgp_asn = var.cloudn_lan_interface_neighbor_bgp_asn
+  enable_over_private_network           = var.enable_over_private_network 
+  enable_jumbo_frame                    = false
+  depends_on = [
+    aviatrix_transit_gateway.transit,
+    time_sleep.wait_30_s
+  ]
 }
 
 # module "cloudn_setup" {
