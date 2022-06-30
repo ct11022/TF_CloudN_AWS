@@ -64,6 +64,7 @@ variable "ssh_user" {
 variable "github_token" {
   description = "github oAthu token"
   type        = string
+  default = ""
 }
 variable "cloudn_public_ip_cidr" {
   description = "CloudN public cide for controller incoming ssl"
@@ -73,6 +74,7 @@ variable "cloudn_public_ip_cidr" {
 variable "cloudn_hostname" {
   description = "CloudN hostname, ex:IP, or hostname"
   type        = string
+  default = ""
 }
 variable "cloudn_https_port" {
   description = "CloudN hostname, ex:IP, or hostname"
