@@ -110,6 +110,9 @@ module "aviatrix_controller_initialize" {
 resource "aviatrix_controller_cert_domain_config" "controller_cert_domain" {
     provider    = aviatrix.new_controller
     cert_domain = var.cert_domain
+    depends_on = [
+      module.aviatrix_controller_initialize
+    ]
 }
 
 # Create AWS Transit VPC
