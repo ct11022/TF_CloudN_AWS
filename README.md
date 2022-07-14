@@ -31,6 +31,7 @@ Provide testbed info such as controller password, license etc as necessary in te
 > transit_vpc_reg = "The VPC region" 
 > transit_vpc_cidr = "VPC CIDR"  
 > incoming_ssl_cidr = ["CIDR", "It makes access to controller"] The CIDR to be allowed for HTTPS(port 443 and 22) access to the controller. Type is "list".
+> 
 
 
 ### Usage for Terraform
