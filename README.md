@@ -16,7 +16,7 @@ Provide testbed info such as controller password, license etc as necessary in pr
 > aviatrix_admin_email  = "Enter_your_controller_admin_email"  
 > aviatrix_license_id  = "Enter_license_ID_string_for_controller"  
 > github_token  = "Github oAthu token allow TF access Aviatrix private Repo"  
-> incoming_ssl_cidr = The CIDR to be allowed for HTTPS(port 443 and 22) access to the controller. Type is "list".
+> 
 
 Provide testbed info such as controller password, license etc as necessary in terraform.tfvars file.
 > testbed_name = ""  
@@ -30,7 +30,7 @@ Provide testbed info such as controller password, license etc as necessary in te
 > transit_vpc_id = "Deploy the Transit GW on existing VPC" 
 > transit_vpc_reg = "The VPC region" 
 > transit_vpc_cidr = "VPC CIDR"  
-> incoming_ssl_cidr = ["CIDR", "It makes access to controller"]  
+> incoming_ssl_cidr = ["CIDR", "It makes access to controller"] The CIDR to be allowed for HTTPS(port 443 and 22) access to the controller. Type is "list".
 
 
 ### Usage for Terraform
