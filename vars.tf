@@ -31,6 +31,26 @@ variable "spoke_count" {
   description = "The number of spokes to create."
   default     = 1
 }
+variable "spoke_vpc_cidr" {
+  description = "AWS VPC CIDR"
+  type        = list(string)
+  default     = ["10.1.0.0/16"]
+}
+variable "spoke_pub_subnet1_cidr" {
+  description = "Public subnet 1 cidr"
+  type        = list(string)
+  default     = ["10.1.0.0/24"]
+}
+variable "spoke_pub_subnet2_cidr" {
+  description = "Public subnet 2 cidr"
+  type        = list(string)
+  default     = ["10.1.1.0/24"]
+}
+variable "spoke_pri_subnet1_cidr" {
+  description = "Private subnet 1 cidr"
+  type        = list(string)
+  default     = ["10.1.2.0/24"]
+}
 variable "controller_vpc_id" {
   description = "create controller at existed vpc"
   default = ""

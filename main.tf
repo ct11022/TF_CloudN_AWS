@@ -139,10 +139,10 @@ module "aws_spoke_vpc" {
   resource_name_label    = "${var.testbed_name}-spoke"
   pub_hostnum            = 10
   pri_hostnum            = 20
-  vpc_cidr               = ["10.8.0.0/16","10.9.0.0/16"]
-  pub_subnet1_cidr       = ["10.8.0.0/24","10.9.0.0/24"]
-  pub_subnet2_cidr       = ["10.8.1.0/24","10.9.1.0/24"]
-  pri_subnet_cidr        = ["10.8.2.0/24","10.9.2.0/24"]
+  vpc_cidr               = var.spoke_vpc_cidr
+  pub_subnet1_cidr       = var.spoke_pub_subnet1_cidr
+  pub_subnet2_cidr       = var.spoke_pub_subnet2_cidr
+  pri_subnet_cidr        = var.spoke_pri_subnet1_cidr
   public_key             = (local.new_key ? tls_private_key.terraform_key[0].public_key_openssh : file(var.public_key_path))
   termination_protection = false
   ubuntu_ami             = "ami-074251216af698218" # default empty will set to ubuntu 18.04 ami
