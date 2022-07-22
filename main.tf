@@ -6,7 +6,7 @@ data "aws_caller_identity" "current" {}
 locals {
   # Proper boolean usage
   new_vpc = (var.controller_vpc_id == "" || var.controller_subnet_id == "" ? true : false)
-  new_key = (var.keypair_name == "" || var.ssh_public_key == "" ? true : false)
+  new_key = (var.keypair_name == "" ? true : false)
 }
 
 
@@ -143,7 +143,7 @@ module "aws_spoke_vpc" {
   pub_subnet1_cidr       = ["10.8.0.0/24","10.9.0.0/24"]
   pub_subnet2_cidr       = ["10.8.1.0/24","10.9.1.0/24"]
   pri_subnet_cidr        = ["10.8.2.0/24","10.9.2.0/24"]
-  public_key             = (local.new_key ? tls_private_key.terraform_key[0].public_key_openssh : var.ssh_public_key)
+  public_key             = (local.new_key ? tls_private_key.terraform_key[0].public_key_openssh : file(var.public_key_path))
   termination_protection = false
   ubuntu_ami             = "ami-074251216af698218" # default empty will set to ubuntu 18.04 ami
   instance_size          = "t3.nano"

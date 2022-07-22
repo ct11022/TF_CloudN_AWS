@@ -47,11 +47,11 @@ variable "keypair_name" {
   description = "use the key saved on aws"
   default = ""
 }
-variable "ssh_public_key" {
-  description = ""
-  default = ""
+variable "public_key_path" {
+  type        = string
+  description = "The path of public key"
+  default     = ""
 }
-
 variable "incoming_ssl_cidr" {
   type        = list(string)
   description = "The CIDR to be allowed for HTTPS(port 443) access to the controller. Type is \"list\"."
