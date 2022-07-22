@@ -1,7 +1,7 @@
 variable "testbed_name" { default = "TFawsCaaG" }
 variable "aws_region" { default = "us-west-2" }
-variable "aws_access_key" {}
-variable "aws_secret_key" {}
+variable "aws_access_key" {default = ""}
+variable "aws_secret_key" {default = ""}
 
 variable "aviatrix_controller_username" { default = "admin" }
 variable "aviatrix_controller_password" { default = "Aviatrix123#" }

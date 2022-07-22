@@ -1,4 +1,4 @@
-# tf_cloudn_1x2x2_aws_tb
+# TF_CloudN_AWS
 This is a terraform script is use for build a standard testbed with 1 Controller 1 Tr with HA, 1 Spoke with HA, 1 Spoke end VM in AWS CSP to CloudN testing 
 
 ## CloudN CaaG smoke test (AWS)
@@ -9,16 +9,43 @@ This Terraform configuration launches a new Aviatrix controller in AWS. Then, it
 
 ### Prerequisites
 
-Provide testbed info such as controller password, license etc as necessary in provider_cred.tfvars file.
+### Authenticating to AWS
+
+### Parameters in the provider.tf
+Credentials can be provided by adding an **access_key**, **secret_key**, and optionally **token**, to the **aws** provider block.
+
+``` terraform
+provider "aws" {
+  region     = "us-west-2"
+  access_key = "my-access-key"
+  secret_key = "my-secret-key"
+}
+```
+Then provide credential info such as controller password, license, AWS API key etc as necessary in provider_cred.tfvars file.
 > aws_access_key = "Enter_AWS_access_key"  
 > aws_secret_key = "Enter_AWS_secret_key"  
 > aviatrix_controller_password = "Enter_your_controller_password"  
 > aviatrix_admin_email  = "Enter_your_controller_admin_email"  
 > aviatrix_license_id  = "Enter_license_ID_string_for_controller"  
-> github_token  = "Github oAthu token allow TF access Aviatrix private Repo"  
-> 
 
-Provide testbed info such as controller password, license etc as necessary in terraform.tfvars file.
+### Shared credentials files (Recommended)
+The AWS Provider can source credentials and other settings from the shared configuration and credentials files. By default, these files are located at **$HOME/.aws/credentials** on Linux and macOS
+
+If no named profile is specified, the **default** profile is used. Use the **profile** parameter or **AWS_PROFILE** environment variable to specify a named profile.
+
+``` terraform
+provider "aws" {
+  shared_config_files      = ["$HOME/.aws/credentials"]
+  shared_credentials_files = ["$HOME/.aws/credentials"]
+  profile                  = "cloudn"
+}
+```
+Then provide credential info such as controller password, license etc as necessary in provider_cred.tfvars file.
+> aviatrix_controller_password = "Enter_your_controller_password"
+> aviatrix_admin_email  = "Enter_your_controller_admin_email"
+> aviatrix_license_id  = "Enter_license_ID_string_for_controller"
+
+Provide testbed information in terraform.tfvars file, such as the testbed name, the deployment VPC for the controller, other variables you want to customized etc.
 > testbed_name = ""  
 > aws_region     = "The region you want to controller and spoke deploy"  
 > keypair_name = "Use exsiting screct key in AWS for SSH login controller"  
