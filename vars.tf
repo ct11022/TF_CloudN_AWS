@@ -9,7 +9,7 @@ variable "aviatrix_admin_email" { default = "jchang@aviatrix.com" }
 variable "aviatrix_controller_ami" { default = "" }
 variable "aviatrix_aws_access_account" { default = "AWSOpsTeam" }
 variable "aviatrix_license_id" {}
-variable "upgrade_target_version" { default = "6.5-patch" }
+variable "upgrade_target_version" { default = "6.7-patch" }
 
 variable "transit_vpc_id" {
   description = "for private network, the transit vpc id"
@@ -22,6 +22,14 @@ variable "transit_vpc_reg" {
 variable "transit_vpc_cidr" {
   description = "for private network, the transit vpc cidr"
   default = ""
+}
+variable "transit_subnet_cidr" {
+  description = "Create in the exsitsor private network, the transit sunbet cidr"
+  default     = ""
+}
+variable "transit_ha_subnet_cidr" {
+  description = "Create in the exsits private network, the transit ha subnet cidr"
+  default     = ""
 }
 variable "spoke_vpc_reg" {
   description = "spoke vpc region"
