@@ -115,6 +115,13 @@ resource "aviatrix_controller_cert_domain_config" "controller_cert_domain" {
     ]
 }
 
+resource time_sleep wait_30_s_cert{
+  create_duration = "30s"
+  depends_on = [
+    aviatrix_controller_cert_domain_config.controller_cert_domain
+  ]
+}
+
 # Create AWS Transit VPC
 resource "aviatrix_vpc" "transit" {
   provider             = aviatrix.new_controller
@@ -127,7 +134,6 @@ resource "aviatrix_vpc" "transit" {
   aviatrix_transit_vpc = true
   aviatrix_firenet_vpc = false
   depends_on           = [
-    aviatrix_controller_cert_domain_config.controller_cert_domain,
     module.aviatrix_controller_initialize
   ]
 }
@@ -158,17 +164,16 @@ resource "aviatrix_transit_gateway" "transit" {
   vpc_id                   = (var.transit_vpc_id != "" ? var.transit_vpc_id : aviatrix_vpc.transit[0].vpc_id)
   vpc_reg                  = var.transit_vpc_reg
   gw_size                  = "c5.large"
-  subnet                   = (var.transit_vpc_cidr != "" ? cidrsubnet(var.transit_vpc_cidr, 10, 14) : cidrsubnet(aviatrix_vpc.transit[0].cidr, 10, 2))
-  # subnet                   = "10.120.2.0/26"
+  subnet                   = (var.transit_vpc_cidr != "" ? var.transit_subnet_cidr : cidrsubnet(aviatrix_vpc.transit[0].cidr, 10, 2))
   insane_mode              = true
   insane_mode_az           = "${var.transit_vpc_reg}a"
-  ha_subnet                = (var.transit_vpc_cidr != "" ? cidrsubnet(var.transit_vpc_cidr, 10, 16) : cidrsubnet(aviatrix_vpc.transit[0].cidr, 10, 4))
-  # ha_subnet                = "10.120.2.192/26"
+  ha_subnet                = (var.transit_vpc_cidr != "" ? var.transit_ha_subnet_cidr : cidrsubnet(aviatrix_vpc.transit[0].cidr, 10, 4))
   ha_gw_size               = "c5.large"
   ha_insane_mode_az        = "${var.transit_vpc_reg}b"
   single_ip_snat           = false
   connected_transit        = true
   depends_on               = [
+    time_sleep.wait_30_s_cert,
     module.aviatrix_controller_initialize]
 }
 
@@ -188,6 +193,7 @@ resource "aviatrix_spoke_gateway" "spoke" {
   manage_transit_gateway_attachment = false
   depends_on                 = [
     module.aws_spoke_vpc,
+    time_sleep.wait_30_s_cert,
     module.aviatrix_controller_initialize
   ]
 }
@@ -241,6 +247,7 @@ resource "aviatrix_cloudn_registration" "cloudn_registration" {
 }
 
 resource time_sleep wait_30_s{
+  count      = (var.enable_caag ? 1 : 0)
   create_duration = "30s"
   depends_on = [
     aviatrix_cloudn_registration.cloudn_registration

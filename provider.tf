@@ -2,7 +2,7 @@ terraform {
   required_providers {
     aviatrix = {
       source = "AviatrixSystems/aviatrix"
-      version = "2.22.1"
+      # version = "2.22.1"
     }
     aws = {
       source = "hashicorp/aws"
@@ -26,7 +26,7 @@ provider "aviatrix" {
   alias                   = "new_controller"
 }
 
-provider "github" {
-  token                  = var.github_token
-  alias                  = "login"
-}
+# provider "github" {
+#   token                  = var.github_token
+#   alias                  = "login"
+# }
