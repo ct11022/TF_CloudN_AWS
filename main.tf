@@ -134,6 +134,7 @@ resource "aviatrix_vpc" "transit" {
   aviatrix_transit_vpc = true
   aviatrix_firenet_vpc = false
   depends_on           = [
+    time_sleep.wait_30_s_cert,
     module.aviatrix_controller_initialize
   ]
 }
