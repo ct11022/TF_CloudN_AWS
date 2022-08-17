@@ -91,17 +91,17 @@ module "aviatrix_controller_build_existed_vpc" {
 
 #Initialize Controller
 module "aviatrix_controller_initialize" {
-  source              = "./aviatrix-controller-initialize-local"
-  aws_account_id      = data.aws_caller_identity.current.account_id
-  private_ip          = local.new_vpc ? module.aviatrix_controller_build_new_vpc[0].private_ip : module.aviatrix_controller_build_existed_vpc[0].private_ip
-  public_ip           = local.new_vpc ? module.aviatrix_controller_build_new_vpc[0].public_ip : module.aviatrix_controller_build_existed_vpc[0].public_ip
-  admin_email         = var.aviatrix_admin_email
-  admin_password      = var.aviatrix_controller_password
-  account_email       = var.aviatrix_admin_email
-  access_account_name = [var.aviatrix_aws_access_account]
-  customer_license_id = var.aviatrix_license_id
-  controller_version  = var.upgrade_target_version
-  depends_on          = [
+  source               = "git@github.com:AviatrixSystems/terraform-aviatrix-aws-controller.git//modules/aviatrix-controller-initialize?ref=main"
+  aws_account_id       = data.aws_caller_identity.current.account_id
+  private_ip           = local.new_vpc ? module.aviatrix_controller_build_new_vpc[0].private_ip : module.aviatrix_controller_build_existed_vpc[0].private_ip
+  public_ip            = local.new_vpc ? module.aviatrix_controller_build_new_vpc[0].public_ip : module.aviatrix_controller_build_existed_vpc[0].public_ip
+  admin_email          = var.aviatrix_admin_email
+  admin_password       = var.aviatrix_controller_password
+  access_account_email = var.aviatrix_admin_email
+  access_account_name  = var.aviatrix_aws_access_account
+  customer_license_id  = var.aviatrix_license_id
+  controller_version   = var.upgrade_target_version
+  depends_on           = [
     module.aviatrix_controller_build_existed_vpc,
     module.aviatrix_controller_build_new_vpc
   ]
