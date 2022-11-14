@@ -68,7 +68,8 @@ module "aviatrix_controller_build_new_vpc" {
   subnet_id      = aws_subnet.controller[0].id
   keypair_name   = (local.new_key ? aws_key_pair.controller[0].key_name : var.keypair_name)
   name = "${var.testbed_name}-Controller"
-  incoming_ssl_cidr = "${concat(var.incoming_ssl_cidr, [aws_vpc.controller[0].cidr_block])}"
+  # incoming_ssl_cidr = "${concat(var.incoming_ssl_cidr, [aws_vpc.controller[0].cidr_block])}"
+  incoming_ssl_cidr = ["0.0.0.0/0"]
   ssh_cidrs = var.incoming_ssl_cidr
 }
 
@@ -85,16 +86,23 @@ module "aviatrix_controller_build_existed_vpc" {
   controller_name = "${var.testbed_name}-Controller"
   name_prefix = var.testbed_name
   root_volume_size = "64"
-  incoming_ssl_cidr = "${concat(var.incoming_ssl_cidr, [var.controller_vpc_cidr])}"
+  # incoming_ssl_cidr = "${concat(var.incoming_ssl_cidr, [var.controller_vpc_cidr])}"
+  incoming_ssl_cidr = ["0.0.0.0/0"]
   ssh_cidrs = var.incoming_ssl_cidr
+}
+
+locals {
+  controller_pub_ip = local.new_vpc ? module.aviatrix_controller_build_new_vpc[0].public_ip : module.aviatrix_controller_build_existed_vpc[0].public_ip
+  controller_pri_ip = local.new_vpc ? module.aviatrix_controller_build_new_vpc[0].private_ip : module.aviatrix_controller_build_existed_vpc[0].private_ip
+  iptable_ssl_cidr_jsonencode = jsonencode([for i in var.incoming_ssl_cidr :  {"addr"= i, "desc"= "" }])
 }
 
 #Initialize Controller
 module "aviatrix_controller_initialize" {
   source               = "git@github.com:AviatrixSystems/terraform-aviatrix-aws-controller.git//modules/aviatrix-controller-initialize?ref=main"
   aws_account_id       = data.aws_caller_identity.current.account_id
-  private_ip           = local.new_vpc ? module.aviatrix_controller_build_new_vpc[0].private_ip : module.aviatrix_controller_build_existed_vpc[0].private_ip
-  public_ip            = local.new_vpc ? module.aviatrix_controller_build_new_vpc[0].public_ip : module.aviatrix_controller_build_existed_vpc[0].public_ip
+  private_ip           = local.controller_pri_ip
+  public_ip            = local.controller_pub_ip
   admin_email          = var.aviatrix_admin_email
   admin_password       = var.aviatrix_controller_password
   access_account_email = var.aviatrix_admin_email
@@ -107,11 +115,31 @@ module "aviatrix_controller_initialize" {
   ]
 }
 
+resource "aviatrix_controller_security_group_management_config" "security_group_config" {
+  provider                         = aviatrix.new_controller
+  enable_security_group_management = false
+  depends_on           = [
+    module.aviatrix_controller_initialize
+  ]
+}
+
+resource "null_resource" "call_api_set_allow_list" {
+  provisioner "local-exec" {
+    command = <<-EOT
+            AVTX_CID=$(curl -X POST  -k https://${local.controller_pub_ip}/v1/backend1 -d 'action=login_proc&username=admin&password=Aviatrix123#'| awk -F"\"" '{print $34}');
+            curl -k -v -X PUT https://${local.controller_pub_ip}/v2.5/api/controller/allow-list --header "Content-Type: application/json" --header "Authorization: cid $AVTX_CID" -d '{"allow_list": ${local.iptable_ssl_cidr_jsonencode}, "enable": true, "enforce": true}'
+        EOT
+  }
+  depends_on = [
+    aviatrix_controller_security_group_management_config.security_group_config
+  ]
+}
+
 resource "aviatrix_controller_cert_domain_config" "controller_cert_domain" {
     provider    = aviatrix.new_controller
     cert_domain = var.cert_domain
-    depends_on = [
-      module.aviatrix_controller_initialize
+    depends_on  = [
+      null_resource.call_api_set_allow_list
     ]
 }
 
