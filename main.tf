@@ -209,7 +209,7 @@ resource "aviatrix_transit_gateway" "transit" {
 #Create an Aviatrix Spoke Gateway-1
 resource "aviatrix_spoke_gateway" "spoke" {
   provider                   = aviatrix.new_controller
-  count                      = 1
+  count                      = var.spoke_count
   cloud_type                 = "1"
   account_name               = var.aviatrix_aws_access_account
   gw_name                    = "${var.testbed_name}-Spoke-GW-${count.index}"
@@ -217,16 +217,21 @@ resource "aviatrix_spoke_gateway" "spoke" {
   vpc_reg                    = var.aws_region
   gw_size                    = "t3.small"
   subnet                     = module.aws_spoke_vpc.subnet_cidr[count.index]
-  ha_subnet                  = module.aws_spoke_vpc.subnet_cidr[count.index]
-  ha_gw_size                 = "t3.small"
-  manage_transit_gateway_attachment = false
+  manage_ha_gateway          = false
   depends_on                 = [
-    module.aws_spoke_vpc,
     time_sleep.wait_30_s_cert,
     module.aviatrix_controller_initialize
   ]
 }
 
+# Create an Aviatrix AWS Spoke HA Gateway
+resource "aviatrix_spoke_ha_gateway" "spoke_ha" {
+  provider        = aviatrix.new_controller
+  count           = var.spoke_count
+  primary_gw_name = aviatrix_spoke_gateway.spoke[count.index].id
+  subnet          = module.aws_spoke_vpc.subnet_cidr[count.index]
+  gw_name         = "${var.testbed_name}-Spoke-GW-${count.index}-ha"
+}
 
 # Create Spoke-Transit Attachment
 resource "aviatrix_spoke_transit_attachment" "spoke" {
@@ -234,6 +239,9 @@ resource "aviatrix_spoke_transit_attachment" "spoke" {
   count           = 1
   spoke_gw_name   = aviatrix_spoke_gateway.spoke[count.index].gw_name
   transit_gw_name = aviatrix_transit_gateway.transit.gw_name
+  depends_on = [
+    aviatrix_spoke_ha_gateway.spoke_ha
+  ]
 }
 
 locals {
