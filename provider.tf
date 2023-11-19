@@ -2,7 +2,7 @@ terraform {
   required_providers {
     aviatrix = {
       source = "AviatrixSystems/aviatrix"
-      # version = "2.22.1"
+      version = "3.1.3"
     }
     aws = {
       source = "hashicorp/aws"
@@ -19,7 +19,7 @@ provider "aws" {
 }
 
 provider "aviatrix" {
-  controller_ip           = local.controller_pub_ip
+  controller_ip           = module.aviatrix_controller_build.public_ip
   username                = var.aviatrix_controller_username
   password                = var.aviatrix_controller_password
   skip_version_validation = true
