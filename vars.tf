@@ -6,10 +6,12 @@ variable "aws_secret_key" {default = ""}
 variable "aviatrix_controller_username" { default = "admin" }
 variable "aviatrix_controller_password" { default = "Aviatrix123#" }
 variable "aviatrix_admin_email" { default = "jchang@aviatrix.com" }
-variable "aviatrix_controller_ami" { default = "" }
+variable "aviatrix_controller_ami_id" { default = "" }
 variable "aviatrix_aws_access_account" { default = "AWSOpsTeam" }
 variable "aviatrix_license_id" {}
 variable "upgrade_target_version" { default = "6.7-patch" }
+
+variable "release_infra" { default = "staging" }
 
 variable "transit_vpc_id" {
   description = "for private network, the transit vpc id"
@@ -80,7 +82,7 @@ variable "public_key_path" {
   description = "The path of public key"
   default     = ""
 }
-variable "incoming_ssl_cidr" {
+variable "incoming_ssl_cidrs" {
   type        = list(string)
   description = "The CIDR to be allowed for HTTPS(port 443) access to the controller. Type is \"list\"."
 }

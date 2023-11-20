@@ -20,7 +20,7 @@ upgrade_target_version = "6.7"
 # transit_vpc_reg = "us-west-1"
 # transit_vpc_cidr = "10.120.0.0/16"
 
-incoming_ssl_cidr = [""]
+incoming_ssl_cidrs = [""]
 
 
 # caag_name = ""
