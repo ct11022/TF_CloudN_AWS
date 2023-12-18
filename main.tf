@@ -194,7 +194,7 @@ resource "aviatrix_spoke_ha_gateway" "spoke_ha" {
   count           = var.spoke_count
   primary_gw_name = aviatrix_spoke_gateway.spoke[count.index].id
   subnet          = module.aws_spoke_vpc.subnet_cidr[count.index]
-  gw_name         = "${var.testbed_name}-Spoke-GW-${count.index}-ha"
+  gw_name         = "${var.testbed_name}-Spoke-GW-${count.index}-${var.spoke_ha_postfix_name}"
 }
 
 # Create Spoke-Transit Attachment

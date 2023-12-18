@@ -61,6 +61,10 @@ variable "spoke_pri_subnet1_cidr" {
   type        = list(string)
   default     = ["10.1.2.0/24"]
 }
+variable "spoke_ha_postfix_name" {
+  description = "A string to append to the spoke_ha name."
+  default     = "hagw"
+}
 variable "controller_vpc_id" {
   description = "create controller at existed vpc"
   default = ""
@@ -90,17 +94,6 @@ variable "incoming_ssl_cidrs" {
 variable "ssh_user" {
   default = "ubuntu"
 }
-
-variable "github_token" {
-  description = "github oAthu token"
-  type        = string
-  default = ""
-}
-variable "cloudn_public_ip_cidr" {
-  description = "CloudN public cide for controller incoming ssl"
-  type        = string
-  default = ""
-}
 variable "cloudn_hostname" {
   description = "CloudN hostname, ex:IP, or hostname"
   type        = string
@@ -110,54 +103,6 @@ variable "cloudn_https_port" {
   description = "CloudN hostname, ex:IP, or hostname"
   type        = string
   default = "22"
-}
-variable "cloudn_bgp_asn" {
-  description = "CloudN BGP AS Number"
-  type        = string
-  default = ""
-}
-variable "cloudn_lan_interface_neighbor_ip" {
-  description = "CloudN LAN Interface Neighbor's IP Address."
-  type        = string
-  default = ""
-}
-variable "cloudn_lan_interface_neighbor_bgp_asn" {
-  description = "CloudN LAN Interface Neighbor's AS Number."
-  type        = string
-  default = ""
-}
-variable "transit_gateway_bgp_asn" {
-  description = "The transit gw BGP ASN number"
-  type        = string
-  default = "65001"
-}
-variable "enable_caag" {
-  description = "Decide register & attach the caag in this testbed"
-  type        = bool
-  default = false
-}
-variable "caag_name" {
-  description = "CloudN As Gateway Name"
-  type        = string
-  default = "caag"
-}
-variable "caag_connection_name" {
-  description = "CloudN As Gateway Name"
-  type        = string
-  default = "connection-1"
-}
-variable "on_prem" {
-  description = " On-prem IP address"
-  type        = string
-  default = ""
-}
-variable "enable_over_private_network" {
-  type       = bool
-  default = false
-}
-variable "vcn_restore_snapshot_name" {
-  type       = string
-  default = ""
 }
 variable "cert_domain" {
   type       = string
