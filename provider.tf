@@ -10,12 +10,18 @@ terraform {
   }
 }
 provider "aws" {
-  region     = var.aws_region
-  # access_key = var.aws_access_key
-  # secret_key = var.aws_secret_key
+  region     = var.aws_controller_region
   shared_config_files      = ["$HOME/.aws/credentials"]
   shared_credentials_files = ["$HOME/.aws/credentials"]
   profile                  = "cloudn"
+}
+
+provider "aws" {
+  region                  = var.aws_spoke_region
+  shared_config_files      = ["$HOME/.aws/credentials"]
+  shared_credentials_files = ["$HOME/.aws/credentials"]
+  profile                  = "cloudn"
+  alias                    = "aws_spoke"
 }
 
 provider "aviatrix" {

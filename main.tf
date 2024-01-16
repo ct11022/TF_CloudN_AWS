@@ -135,6 +135,9 @@ resource "aviatrix_vpc" "transit" {
 # Create AWS Spoke VPCs
 module "aws_spoke_vpc" {
   source                 = "git@github.com:AviatrixDev/automation_test_scripts.git//Regression_Testbed_TF_Module/modules/testbed-vpc-aws?ref=master"
+  providers = {
+    aws = aws.aws_spoke
+  }
   vpc_count              = var.spoke_count
   resource_name_label    = "${var.testbed_name}-spoke"
   pub_hostnum            = 10
@@ -145,7 +148,7 @@ module "aws_spoke_vpc" {
   pri_subnet_cidr        = var.spoke_pri_subnet1_cidr
   public_key             = (local.new_key ? tls_private_key.terraform_key[0].public_key_openssh : file(var.public_key_path))
   termination_protection = false
-  ubuntu_ami             = "ami-074251216af698218" # default empty will set to ubuntu 18.04 ami
+  ubuntu_ami             = var.spoke_end_vm_ami 
   instance_size          = "t3.nano"
 }
 
@@ -178,7 +181,7 @@ resource "aviatrix_spoke_gateway" "spoke" {
   account_name               = var.aviatrix_aws_access_account
   gw_name                    = "${var.testbed_name}-Spoke-GW-${count.index}"
   vpc_id                     = module.aws_spoke_vpc.vpc_id[count.index]
-  vpc_reg                    = var.aws_region
+  vpc_reg                    = var.aws_spoke_region
   gw_size                    = "t3.small"
   subnet                     = module.aws_spoke_vpc.subnet_cidr[count.index]
   manage_ha_gateway          = false

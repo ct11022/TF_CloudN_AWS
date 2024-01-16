@@ -1,5 +1,6 @@
 variable "testbed_name" { default = "TFawsCaaG" }
-variable "aws_region" { default = "us-west-2" }
+variable "aws_controller_region" { default = "us-west-2" }
+variable "aws_spoke_region" { default = "us-west-2" }
 variable "aws_access_key" {default = ""}
 variable "aws_secret_key" {default = ""}
 
@@ -64,6 +65,10 @@ variable "spoke_pri_subnet1_cidr" {
 variable "spoke_ha_postfix_name" {
   description = "A string to append to the spoke_ha name."
   default     = "hagw"
+}
+variable "spoke_end_vm_ami" {
+  description = "spoke end vm AMI ID"
+  default     = "" # default empty will set to ubuntu 18.04 ami
 }
 variable "controller_vpc_id" {
   description = "create controller at existed vpc"
