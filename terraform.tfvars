@@ -1,7 +1,7 @@
 # testbed_name = ""
 
 # When region is changed, make sure AMI image is also changed.
-aws_region     = "us-west-2"
+aws_controller_region     = "us-west-2"
 
 #Use exsiting screct key for all testbed items SSH login.
 # keypair_name = ""
