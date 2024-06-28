@@ -3,10 +3,17 @@
 
 data "aws_caller_identity" "current" {}
 
+data "http" "icanhazip" {
+  url = "http://icanhazip.com"
+}
+
 locals {
   # Proper boolean usage
-  new_key = (var.keypair_name == "" ? true : false)
+  new_key                     = (var.keypair_name == "" ? true : false)
+  new_incoming_ssl_cidrs      = concat(var.incoming_ssl_cidrs, ["${chomp(data.http.icanhazip.response_body)}/32"])
+  iptable_ssl_cidr_jsonencode = jsonencode([for i in local.new_incoming_ssl_cidrs : { "addr" = i, "desc" = "" }])
 }
+
 
 # Public-Private key generation
 resource "tls_private_key" "terraform_key" {
@@ -55,38 +62,21 @@ module "aviatrix_controller_build" {
   access_account_name    = var.aviatrix_aws_access_account
   customer_license_id    = var.aviatrix_license_id
   controller_version     = var.upgrade_target_version
+  type                   = var.controller_type_of_billing
 
 }
 
 locals {
   controller_pub_ip           = module.aviatrix_controller_build.public_ip
   controller_pri_ip           = module.aviatrix_controller_build.private_ip
-  iptable_ssl_cidr_jsonencode = jsonencode([for i in var.incoming_ssl_cidrs : { "addr" = i, "desc" = "" }])
 }
-
-# #Initialize Controller
-# module "aviatrix_controller_initialize" {
-#   source               = "git@github.com:AviatrixSystems/terraform-aviatrix-aws-controller.git//modules/aviatrix-controller-initialize?ref=main"
-#   aws_account_id       = data.aws_caller_identity.current.account_id
-#   private_ip           = module.aviatrix_controller_build.private_ip
-#   public_ip            = module.aviatrix_controller_build.public_ip
-#   admin_email          = var.aviatrix_admin_email
-#   admin_password       = var.aviatrix_controller_password
-#   access_account_email = var.aviatrix_admin_email
-#   access_account_name  = var.aviatrix_aws_access_account
-#   customer_license_id  = var.aviatrix_license_id
-#   controller_version   = var.upgrade_target_version
-#   depends_on           = [
-#     module.aviatrix_controller_build
-#   ]
-# }
 
 resource "aws_security_group_rule" "ingress_rule_ssh" {
   type              = "ingress"
   from_port         = 22
   to_port           = 22
   protocol          = "tcp"
-  cidr_blocks       = var.incoming_ssl_cidrs
+  cidr_blocks       = local.new_incoming_ssl_cidrs
   security_group_id = module.aviatrix_controller_build.security_group_id
 }
 
@@ -98,24 +88,22 @@ resource "aviatrix_controller_security_group_management_config" "security_group_
   ]
 }
 
-resource "null_resource" "call_api_set_allow_list" {
-  provisioner "local-exec" {
-    command = <<-EOT
-            AVTX_CID=$(curl -X POST  -k https://${local.controller_pub_ip}/v1/backend1 -d 'action=login_proc&username=admin&password=Aviatrix123#'| awk -F"\"" '{print $34}');
-            curl -k -v -X PUT https://${local.controller_pub_ip}/v2.5/api/controller/allow-list --header "Content-Type: application/json" --header "Authorization: cid $AVTX_CID" -d '{"allow_list": ${local.iptable_ssl_cidr_jsonencode}, "enable": true, "enforce": true}'
-        EOT
-  }
-  depends_on = [
-    aviatrix_controller_security_group_management_config.security_group_config
-  ]
-}
+# resource "null_resource" "call_api_set_allow_list" {
+#   provisioner "local-exec" {
+#     command = <<-EOT
+#             AVTX_CID=$(curl -X POST  -k https://${local.controller_pub_ip}/v1/backend1 -d 'action=login_proc&username=admin&password=Aviatrix123#'| awk -F"\"" '{print $34}');
+#             curl -k -v -X PUT https://${local.controller_pub_ip}/v2.5/api/controller/allow-list --header "Content-Type: application/json" --header "Authorization: cid $AVTX_CID" -d '{"allow_list": ${local.iptable_ssl_cidr_jsonencode}, "enable": true, "enforce": true}'
+#         EOT
+#   }
+#   depends_on = [
+#     aviatrix_controller_security_group_management_config.security_group_config
+#   ]
+# }
 
 resource "aviatrix_controller_cert_domain_config" "controller_cert_domain" {
   provider    = aviatrix.new_controller
   cert_domain = var.cert_domain
-  depends_on = [
-    null_resource.call_api_set_allow_list
-  ]
+  depends_on = [module.aviatrix_controller_build]
 }
 
 resource "time_sleep" "wait_30_s_cert" {

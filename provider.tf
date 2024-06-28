@@ -1,7 +1,7 @@
 terraform {
   required_providers {
     aviatrix = {
-      source = "AviatrixSystems/aviatrix"
+      source  = "AviatrixSystems/aviatrix"
       version = "3.1.3"
     }
     aws = {
@@ -10,14 +10,14 @@ terraform {
   }
 }
 provider "aws" {
-  region     = var.aws_controller_region
+  region                   = var.aws_controller_region
   shared_config_files      = ["$HOME/.aws/credentials"]
   shared_credentials_files = ["$HOME/.aws/credentials"]
   profile                  = "cloudn"
 }
 
 provider "aws" {
-  region                  = var.aws_spoke_region
+  region                   = var.aws_spoke_region
   shared_config_files      = ["$HOME/.aws/credentials"]
   shared_credentials_files = ["$HOME/.aws/credentials"]
   profile                  = "cloudn"
@@ -31,8 +31,3 @@ provider "aviatrix" {
   skip_version_validation = true
   alias                   = "new_controller"
 }
-
-# provider "github" {
-#   token                  = var.github_token
-#   alias                  = "login"
-# }

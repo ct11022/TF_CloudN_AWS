@@ -1,8 +1,8 @@
 variable "testbed_name" { default = "TFawsCaaG" }
 variable "aws_controller_region" { default = "us-west-2" }
 variable "aws_spoke_region" { default = "us-west-2" }
-variable "aws_access_key" {default = ""}
-variable "aws_secret_key" {default = ""}
+variable "aws_access_key" { default = "" }
+variable "aws_secret_key" { default = "" }
 
 variable "aviatrix_controller_username" { default = "admin" }
 variable "aviatrix_controller_password" { default = "Aviatrix123#" }
@@ -11,20 +11,20 @@ variable "aviatrix_controller_ami_id" { default = "" }
 variable "aviatrix_aws_access_account" { default = "AWSOpsTeam" }
 variable "aviatrix_license_id" {}
 variable "upgrade_target_version" { default = "6.7-patch" }
-
+variable "controller_type_of_billing" { default = "BYOL" }
 variable "release_infra" { default = "staging" }
 
 variable "transit_vpc_id" {
   description = "for private network, the transit vpc id"
-  default = ""
+  default     = ""
 }
 variable "transit_vpc_reg" {
   description = "for private network, the transit vpc region"
-  default = "us-east-2"
+  default     = "us-east-2"
 }
 variable "transit_vpc_cidr" {
   description = "for private network, the transit vpc cidr"
-  default = ""
+  default     = ""
 }
 variable "transit_subnet_cidr" {
   description = "Create in the exsitsor private network, the transit sunbet cidr"
@@ -36,7 +36,7 @@ variable "transit_ha_subnet_cidr" {
 }
 variable "spoke_vpc_reg" {
   description = "spoke vpc region"
-  default = "us-east-2"
+  default     = "us-east-2"
 }
 variable "spoke_count" {
   description = "The number of spokes to create."
@@ -72,19 +72,19 @@ variable "spoke_end_vm_ami" {
 }
 variable "controller_vpc_id" {
   description = "create controller at existed vpc"
-  default = ""
+  default     = ""
 }
 variable "controller_vpc_cidr" {
   description = "create controller at existed vpc"
-  default = ""
+  default     = ""
 }
 variable "controller_subnet_id" {
   description = "create controller at existed vpc"
-  default = ""
+  default     = ""
 }
 variable "keypair_name" {
   description = "use the key saved on aws"
-  default = ""
+  default     = ""
 }
 variable "public_key_path" {
   type        = string
@@ -102,14 +102,14 @@ variable "ssh_user" {
 variable "cloudn_hostname" {
   description = "CloudN hostname, ex:IP, or hostname"
   type        = string
-  default = ""
+  default     = ""
 }
 variable "cloudn_https_port" {
   description = "CloudN hostname, ex:IP, or hostname"
   type        = string
-  default = "22"
+  default     = "22"
 }
 variable "cert_domain" {
-  type       = string
+  type    = string
   default = "caag.com"
 }
